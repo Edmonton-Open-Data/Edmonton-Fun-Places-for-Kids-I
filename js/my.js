@@ -19,7 +19,7 @@ const PromiseWrapper = function(d) {
 //iteratively load csv files from myData folder
 const promises = dataFiles.map(file => PromiseWrapper(`myData/${file}.csv`));
 
-//to load icons from myImgs folder
+//to load icons from myImg folder
 const loader = new PIXI.loaders.Loader();
 
 //Leaflet and map setup
