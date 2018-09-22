@@ -103,7 +103,7 @@ function funViz(allData) {
         detectStretched: true
     });
 
-    //iteratively load icons from myImgs folder
+    //iteratively load icons from myImg folder
     allTypes.forEach(d => loader.add(d, `myImg/${d}.png`));
 
     //add legend to map and close it (default setting is opened)
