@@ -207,7 +207,7 @@ function funViz(allData) {
                     efficiency - listeners only on the parent container and leafletMap as 
                     opposed, to adding listerners to each marker
                     */
-                   leafletMap.on("tap", function(e) {
+                   leafletMap.on("click", function(e) {
                         const interaction = renderer.plugins.interaction;
                         const pointerEvent = e.originalEvent;
                         const pixiPoint = new PIXI.Point();
@@ -218,17 +218,17 @@ function funViz(allData) {
                         if (target && target.popup) target.popup.openOn(map);
                     });
                     
-                    stage.on("mousemove", function(e) {
-                        const target = e.target;
+                    // stage.on("mousemove", function(e) {
+                    //     const target = e.target;
 
-                        if(target && target.legend) {
-                            topCenterDiv.classed("hide", false);
-                            legendContent.innerHTML = target.legend;
-                        }
-                        else {
-                            topCenterDiv.classed("hide", true);  
-                        };
-                    });
+                    //     if(target && target.legend) {
+                    //         topCenterDiv.classed("hide", false);
+                    //         legendContent.innerHTML = target.legend;
+                    //     }
+                    //     else {
+                    //         topCenterDiv.classed("hide", true);  
+                    //     };
+                    // });
                 };
 
                 if(firstDraw || prevZoom !== zoom) {
