@@ -92,7 +92,7 @@ function funViz(allData) {
     const htmlLegend = L.control.htmllegend({
         position: "topright",
         legends: [{
-            name: "Legend",
+            name: "Legend and Totals",
             elements: [{
                 html: formInputHTML,
                 label: "Toggle Types"
@@ -162,9 +162,7 @@ function funViz(allData) {
                 "layerContainer": layerContainer,
                 "layerMarkers": layerMarkers
             };
-
         });
-        
         
         //parent container - to nest layer containers
         const parentContainer = new PIXI.Container();
@@ -178,7 +176,8 @@ function funViz(allData) {
             let markerSprites = [];
 
             return L.pixiOverlay(function(utils) {
-                const zoom = utils.getMap().getZoom();
+                const leafletMap = utils.getMap();
+                const zoom = leafletMap.getZoom();
                 const stage = utils.getContainer();
                 const renderer = utils.getRenderer();
                 const project = utils.latLngToLayerPoint;
@@ -190,6 +189,7 @@ function funViz(allData) {
                     .reduce((acc, curVal) => acc.concat(curVal),[]);
                 
                 if(firstDraw) {
+                    const topCenterDiv = d3.select(".top.center");
                     prevZoom = zoom;
                     allMarkers.forEach(function(marker) {
                         const coords = project([marker["LATITUDE"], marker["LONGITUDE"]]);
@@ -200,6 +200,36 @@ function funViz(allData) {
                         markerSprite.scale.set(invScale);
                         markerSprites.push(markerSprite);
                     });
+                    
+                    /*
+                    efficiency - listeners only on the parent container and map as 
+                    opposed, to adding listerners to each marker
+                    */
+                   leafletMap.on("click", function(e) {
+                        const interaction = renderer.plugins.interaction;
+                        const pointerEvent = e.originalEvent;
+                        const pixiPoint = new PIXI.Point();
+
+                        interaction.mapPositionToPoint(pixiPoint, pointerEvent.clientX, pointerEvent.clientY);
+                        const target = interaction.hitTest(pixiPoint, stage);
+
+                        legendToggle(target);
+                    });
+                    
+                    stage.on("mousemove", function(e) {
+                        const target = e.target;
+                        legendToggle(target);
+                    });
+                    
+                    function legendToggle(target) {
+                        if(target && target.legend) {
+                            topCenterDiv.classed("hide", false);
+                            legendContent.innerHTML = target.legend;
+                        }
+                        else {
+                            topCenterDiv.classed("hide", true);  
+                        };
+                    };
                 };
 
                 if(firstDraw || prevZoom !== zoom) {
@@ -242,39 +272,5 @@ function funViz(allData) {
         })();
 
         pixiLayer.addTo(map);
-
-        /*
-        efficiency - listeners only on the parent container as 
-        opposed, to adding listerners to each marker
-        */
-        ["pointermove"].forEach(viewName);
-        ["tap"].forEach(viewNameTouch);
-
-
-        function viewNameTouch(event) {
-            parentContainer.on(event, function(e) {
-                const target = e.target;
-
-                if(target && target.legend) {
-                    d3.select(".top.center").classed("hide", false);
-                    legendContent.innerHTML = target.legend;
-                };
-            });
-        };
-
-        function viewName(event) {
-            parentContainer.on(event, function(e) {
-                const target = e.target;
-                const topCenterDiv = d3.select(".top.center");
-
-                if(target && target.legend) {
-                    topCenterDiv.classed("hide", false);
-                    legendContent.innerHTML = target.legend;
-                }
-                else {
-                    topCenterDiv.classed("hide", true);
-                }
-            });
-        };
     });
 };
