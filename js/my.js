@@ -207,7 +207,7 @@ function funViz(allData) {
                     efficiency - listeners only on the parent container and leafletMap as 
                     opposed, to adding listerners to each marker
                     */
-                   leafletMap.on("click", function(e) {
+                   leafletMap.on("tap", function(e) {
                         const interaction = renderer.plugins.interaction;
                         const pointerEvent = e.originalEvent;
                         const pixiPoint = new PIXI.Point();
