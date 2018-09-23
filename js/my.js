@@ -215,7 +215,7 @@ function funViz(allData) {
                         interaction.mapPositionToPoint(pixiPoint, pointerEvent.clientX, pointerEvent.clientY);
                         const target = interaction.hitTest(pixiPoint, stage);
 
-                        if (target && target.popup) target.popup.openOn(leafletMap);
+                        if (target && target.popup) target.popup.openOn(map);
                     });
                     
                     stage.on("mousemove", function(e) {
