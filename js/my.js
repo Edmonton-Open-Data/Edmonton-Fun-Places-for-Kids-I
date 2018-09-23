@@ -146,6 +146,8 @@ function funViz(allData) {
                 markerSprite.tint = colorScale(key);
                 markerSprite.interactive = true;
                 markerSprite.buttonMode = true;
+                markerSprite.popup = L.popup().setLatLng([p["LATITUDE"], p["LONGITUDE"]])
+                                      .setContent(markerSprite.legend);
                 markerSprite.anchor.set(0.5, 0.5);
                 layerContainer.addChild(markerSprite);
 
@@ -202,7 +204,7 @@ function funViz(allData) {
                     });
                     
                     /*
-                    efficiency - listeners only on the parent container and map as 
+                    efficiency - listeners only on the parent container and leafletMap as 
                     opposed, to adding listerners to each marker
                     */
                    leafletMap.on("click", function(e) {
@@ -213,15 +215,12 @@ function funViz(allData) {
                         interaction.mapPositionToPoint(pixiPoint, pointerEvent.clientX, pointerEvent.clientY);
                         const target = interaction.hitTest(pixiPoint, stage);
 
-                        legendToggle(target);
+                        if (target && target.popup) target.popup.openOn(leafletMap);
                     });
                     
                     stage.on("mousemove", function(e) {
                         const target = e.target;
-                        legendToggle(target);
-                    });
-                    
-                    function legendToggle(target) {
+
                         if(target && target.legend) {
                             topCenterDiv.classed("hide", false);
                             legendContent.innerHTML = target.legend;
@@ -229,7 +228,7 @@ function funViz(allData) {
                         else {
                             topCenterDiv.classed("hide", true);  
                         };
-                    };
+                    });
                 };
 
                 if(firstDraw || prevZoom !== zoom) {
