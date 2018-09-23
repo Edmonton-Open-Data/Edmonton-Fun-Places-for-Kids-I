@@ -26,13 +26,14 @@ div.cartes .legend .content {
 	overflow:auto;
 	max-width:100%;
 	max-height:100%;
-	padding:1em;
+	padding:0.6em;
 	text-align:left;
 	border-radius:0.5em;
 	cursor:auto;
-	pointer-events:auto;
+	pointer-events:none;
 	font-size: large;
 	font-weight: 800;
+	background-color:#fafaf8;
 }
 div.cartes .legend .content:before {
 	content:'';
@@ -119,7 +120,7 @@ div.main-legend .color {
 }
 
 div.main-legend .color::before {
-	  content: '';
+	content: '';
     height: 1.2em;
     width: 1.2em;
     position: absolute;

@@ -1,4 +1,5 @@
 const log = console.log;
+
 //names for csv files (courtesy of Edmonton Open Data)
 const dataFiles = [
     "Attractions(Sep-17-2018)",
@@ -10,19 +11,25 @@ const dataFiles = [
     "Soccer_Fields(Sep-17-2018)",
     "Track_Sports_Fields(Sep-17-2018)"
 ];
+
 //for loading csv files
 const PromiseWrapper = function(d) {
     return new Promise(function(resolve) {
         d3.csv(d, function(p) { resolve(p); });
     });
 };
+
 //iteratively load csv files from myData folder
 const promises = dataFiles.map(file => PromiseWrapper(`myData/${file}.csv`));
 
 //to load icons from myImg folder
 const loader = new PIXI.loaders.Loader();
 
-//Leaflet and map setup
+//for displaying name and type of marker 
+const legend = document.querySelector("div.legend.geometry");
+let legendContent = legend.querySelector(".content");
+
+//Leaflet map and setup
 const map = L.map("map", {
     zoomSnap: 0.5,
     zoom: zoomSelector(window.innerWidth),
@@ -34,8 +41,6 @@ const positron = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
     maxZoom: 18
 });
-const legend = document.querySelector("div.legend.geometry");
-let legendContent = legend.querySelector(".content");
 
 map.setView([53.489883960188344, -113.51966857910158]);
 map.attributionControl.setPosition('bottomleft');
@@ -57,7 +62,7 @@ function zoomSelector(size) {
            11;
 };
 
-//Places points on the map and creates legend
+//Places points on the map and creates htmlLegend(legend and totals)
 function funViz(allData) {
     //reduces all data into one array 
     //empty types and names handled as well (data cleaning)
@@ -78,7 +83,7 @@ function funViz(allData) {
                 "0xF9BA32", "0x00CFFA", "0xE5E2CA", "0xFA6775","0x92AAC7", "0xDBAE58" 
             ]);
 
-    //build legend based on dataNest (data driven)		
+    //build htmlLegend based on dataNest (data driven)		
     const inputDivs = dataNest.map(d => {
         const layerName = d.key;
         const totalPoints = d.values.length;
@@ -88,7 +93,7 @@ function funViz(allData) {
     }).reduce((acc, curVal) => acc + curVal, "");
     const formInputHTML = `<form>${inputDivs}</form>`;
 
-    //helper leaflet legend plugin
+    //helper leaflet plugin - htmlLegend
     const htmlLegend = L.control.htmllegend({
         position: "topright",
         legends: [{
@@ -106,11 +111,11 @@ function funViz(allData) {
     //iteratively load icons from myIcons folder
     allTypes.forEach(d => loader.add(d, `myIcons/${d}.png`));
 
-    //add legend to map and close it (default setting is opened)
+    //add htmlLegend to map and close it (default setting is opened)
     map.addControl(htmlLegend);
     d3.select("div h4").classed("closed", true);
 
-    //helps to build legend checkbox inputs
+    //for building htmlLegend checkbox inputs
     function inputMarker(name, points) {
         const inputDiv = `
                 <div>
@@ -146,9 +151,8 @@ function funViz(allData) {
                 markerSprite.tint = colorScale(key);
                 markerSprite.interactive = true;
                 markerSprite.buttonMode = true;
-                markerSprite.popup = L.popup().setLatLng([p["LATITUDE"], p["LONGITUDE"]])
-                                      .setContent(markerSprite.legend);
                 markerSprite.anchor.set(0.5, 0.5);
+
                 layerContainer.addChild(markerSprite);
 
                 return {
@@ -191,9 +195,8 @@ function funViz(allData) {
                     .reduce((acc, curVal) => acc.concat(curVal),[]);
                 
                 if(firstDraw) {
-                    const topCenterDiv = d3.select(".top.center");
                     prevZoom = zoom;
-                    allMarkers.forEach(function(marker) {
+                    allMarkers.forEach(marker => {
                         const coords = project([marker["LATITUDE"], marker["LONGITUDE"]]);
                         let markerSprite = marker["MARKERSPRITE"];
 
@@ -204,37 +207,24 @@ function funViz(allData) {
                     });
                     
                     /*
-                    efficiency - listeners only on the parent container and leafletMap as 
+                    efficiency - listener only on the parent container as 
                     opposed, to adding listerners to each marker
                     */
-                   leafletMap.on("click", function(e) {
-                        const interaction = renderer.plugins.interaction;
-                        const pointerEvent = e.originalEvent;
-                        const pixiPoint = new PIXI.Point();
+                    stage.on("pointermove", e => {
+                        const target = e.target;
 
-                        interaction.mapPositionToPoint(pixiPoint, pointerEvent.clientX, pointerEvent.clientY);
-                        const target = interaction.hitTest(pixiPoint, stage);
-
-                        if (target && target.popup) target.popup.openOn(map);
+                        if(target && target.legend) {
+                            L.DomUtil.removeClass(legend, 'hide');
+                            legendContent.innerHTML = target.legend;
+                        }
+                        else {
+                            L.DomUtil.addClass(legend, 'hide');
+                        };
                     });
-                    
-                    // stage.on("mousemove", function(e) {
-                    //     const target = e.target;
-
-                    //     if(target && target.legend) {
-                    //         topCenterDiv.classed("hide", false);
-                    //         legendContent.innerHTML = target.legend;
-                    //     }
-                    //     else {
-                    //         topCenterDiv.classed("hide", true);  
-                    //     };
-                    // });
                 };
 
                 if(firstDraw || prevZoom !== zoom) {
-                    markerSprites.forEach(function(markerSprite) {
-                        markerSprite.scale.set(invScale);
-                    });
+                    markerSprites.forEach(markerSprite => markerSprite.scale.set(invScale));
                 };
 
                 firstDraw = false;
@@ -267,7 +257,7 @@ function funViz(allData) {
                     });
                 });
 
-            }, parentContainer, { doubleBuffering: true});
+            }, parentContainer, {doubleBuffering: true});
         })();
 
         pixiLayer.addTo(map);
