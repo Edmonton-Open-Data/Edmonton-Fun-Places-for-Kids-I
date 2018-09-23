@@ -22,7 +22,7 @@ const PromiseWrapper = function(d) {
 //iteratively load csv files from myData folder
 const promises = dataFiles.map(file => PromiseWrapper(`myData/${file}.csv`));
 
-//to load icons from myImg folder
+//to load icons from myIcons folder
 const loader = new PIXI.loaders.Loader();
 
 //for displaying name and type of marker 
