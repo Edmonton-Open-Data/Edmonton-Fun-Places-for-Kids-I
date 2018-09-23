@@ -247,7 +247,20 @@ function funViz(allData) {
         efficiency - listeners only on the parent container as 
         opposed, to adding listerners to each marker
         */
-        ["pointermove", "tap"].forEach(viewName);
+        ["pointermove"].forEach(viewName);
+        ["tap"].forEach(viewNameTouch);
+
+
+        function viewNameTouch(event) {
+            parentContainer.on(event, function(e) {
+                const target = e.target;
+
+                if(target && target.legend) {
+                    d3.select(".top.center").classed("hide", false);
+                    legendContent.innerHTML = target.legend;
+                };
+            });
+        };
 
         function viewName(event) {
             parentContainer.on(event, function(e) {
